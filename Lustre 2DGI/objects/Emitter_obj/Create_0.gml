@@ -1,11 +1,11 @@
 /// @description 
 event_inherited();
 
-image_blend = make_color_hsv(random(255),random(64)+64,255);
+image_blend = make_color_hsv(random(255),200,255);
 image_alpha = 1;
 emissive_strength = 1;
 
-e_mul = random_range(0.5,8)*1;
+e_mul = random_range(0.5,8)*4;
 
 emissive_index = circle_spr;
 color_index = sprite_index;
@@ -19,6 +19,8 @@ stepSpd = random_range(0.05,0.2)/2;
 x = round(x/3)*3;
 y = round(y/3)*3;
 
+image_xscale = next_p2(image_xscale);
+image_yscale = next_p2(image_yscale);
 
 /*
 function draw_emission_data(){

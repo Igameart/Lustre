@@ -71,6 +71,6 @@ void main()
 	float threshold = 0.18*0.14;
 	
     gl_FragColor = v_vColour * smartDeNoise( gm_BaseTexture, v_vTexcoord, sigma, kSigma, threshold );
-	gl_FragColor.a = 1.0;
+	//gl_FragColor.a = 1.0;
 }
 

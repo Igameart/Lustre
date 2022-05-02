@@ -104,8 +104,8 @@
     "TileSerialiseData": [],
   },
   "parent": {
-    "name": "Tile Sets",
-    "path": "folders/Tile Sets.yy",
+    "name": "Jawbreaker",
+    "path": "folders/Tile Sets/Jawbreaker.yy",
   },
   "resourceVersion": "1.0",
   "name": "jawbreaker_e_til",

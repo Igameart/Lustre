@@ -69,8 +69,8 @@
   ],
   "nineSlice": null,
   "parent": {
-    "name": "Tilesets",
-    "path": "folders/Sprites/Tilesets.yy",
+    "name": "Jawbreaker",
+    "path": "folders/Sprites/Tilesets/Jawbreaker.yy",
   },
   "resourceVersion": "1.0",
   "name": "jawbreaker_tspr",
