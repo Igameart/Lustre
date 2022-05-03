@@ -29,6 +29,7 @@ LU_LastFrameData = surface_create(WW,HH);
 LU_VoronoiSeedSurf = surface_create(WW,HH);
 LU_VoronoiDataSurf = surface_create(WW,HH);
 LU_NormalDataSurf = surface_create(WW,HH);
+LU_NoiseDataSurf = surface_create(WW,HH);
 
 LU_JumpFloodPass = LU_new_render_pass(WW,HH);
 
@@ -38,7 +39,7 @@ LU_voronoi_passes = [];
 
 LU_occupy_jumpflood()
 
-distmod = 1;
+distmod = 10;
 
 LU_DistanceField = LU_new_render_pass(WW,HH);
 LU_DistanceField.material = LU_new_material(LU_Material,LU_DistanceField_shd);
@@ -53,16 +54,17 @@ mat.set_shader_param(mat.param,"SCREEN_PIXEL_SIZE", [1/WW,1/HH]);
 mat.set_shader_param(mat.param,"TIME", TIME);
 mat.set_shader_param(mat.param,"SKYLIGHT", 0.25);
 mat.set_shader_param(mat.param,"u_resolution", [WW,HH] );
-mat.set_shader_param(mat.param,"Iu_rays_per_pixel", 256);
+mat.set_shader_param(mat.param,"Iu_rays_per_pixel", 128);
 mat.set_shader_param(mat.param,"u_dist_mod", distmod);
 mat.set_shader_param(mat.param,"Iu_bounce", true);
 mat.set_shader_param(mat.param,"u_emission_multi", 1.0);
 mat.set_shader_param(mat.param,"u_emission_range", 10.0);
 mat.set_shader_param(mat.param,"u_emission_dropoff", 2.0);
 mat.set_shader_param(mat.param,"Iu_max_raymarch_steps", 32);
+mat.set_shader_param(mat.param,"Iu_sin1000", sine_array);
 
 surface_set_target(LU_LastFrameData);
 draw_clear(c_black);
 surface_reset_target();
 
-bloomSurf = surface_create(WW,HH);
+//bloomSurf = surface_create(WW,HH);

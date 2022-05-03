@@ -8,6 +8,7 @@ varying vec2 v_vTexcoord;
 varying vec4 v_vColour;
 
 uniform float u_emission;
+uniform bool u_is_passable;
 
 
 const float c_precision = 128.0;
@@ -49,8 +50,7 @@ void main()
 {
 	gl_FragColor = v_vColour * texture2D( gm_BaseTexture, v_vTexcoord );
     gl_FragColor.rgb = float2color( gl_FragColor.r * u_emission );//, 0.0, 100.0 );
-	//gl_FragColor.a = u_emission / 50.0;
 	
-    //gl_FragColor.rgb = vec3(UnpackDepth24( gl_FragColor.rgb, 0.0, u_emission ));
+	gl_FragColor.a *= float(u_is_passable);
 	
 }

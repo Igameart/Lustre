@@ -12,6 +12,8 @@ emissive_strength = 0;
 
 e_mul = 1.0;
 
+light_passable = false;
+
 function draw_emission_data(){
 	//draw_text_transformed(x,y-sprite_height/2-3,string(emissive_strength),3,3,90);
 	draw_sprite_ext(emissive_index,image_index,x,y,image_xscale,image_yscale,image_angle,c_white,1);

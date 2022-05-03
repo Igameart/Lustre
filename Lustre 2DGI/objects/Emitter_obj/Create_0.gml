@@ -1,6 +1,8 @@
 /// @description 
 event_inherited();
 
+light_passable = true;
+
 image_blend = make_color_hsv(random(255),200,255);
 image_alpha = 1;
 emissive_strength = 1;

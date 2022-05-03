@@ -43,6 +43,8 @@
     {"id":{"name":"topdown_rm","path":"rooms/topdown_rm/topdown_rm.yy",},"order":1,},
     {"id":{"name":"jawbreaker_tspr","path":"sprites/jawbreaker_tspr/jawbreaker_tspr.yy",},"order":1,},
     {"id":{"name":"alienPlatformerBG_spr","path":"sprites/alienPlatformerBG_spr/alienPlatformerBG_spr.yy",},"order":7,},
+    {"id":{"name":"LU_NormalsTransform","path":"shaders/LU_NormalsTransform/LU_NormalsTransform.yy",},"order":13,},
+    {"id":{"name":"LU_GlobalIllum_allsolids_shd","path":"shaders/LU_GlobalIllum_allsolids_shd/LU_GlobalIllum_allsolids_shd.yy",},"order":14,},
     {"id":{"name":"LU_Data","path":"scripts/LU_Data/LU_Data.yy",},"order":0,},
     {"id":{"name":"logo_obj","path":"objects/logo_obj/logo_obj.yy",},"order":6,},
     {"id":{"name":"LU_LastFrame","path":"shaders/LU_LastFrame/LU_LastFrame.yy",},"order":4,},

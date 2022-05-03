@@ -1,7 +1,7 @@
 //
 // Simple passthrough fragment shader
 //
-precision highp float;
+precision mediump float;
 precision mediump int;
 
 varying vec2 UV;
@@ -11,7 +11,6 @@ varying vec4 v_vColour;
 
 // constants
 const float PI = 3.141596;
-const float PI2 = PI * 2.0;
 const float c_precision = 128.0;
 const float c_precisionp1 = c_precision + 1.0;
 const float gamma = 2.0;
@@ -38,34 +37,6 @@ uniform vec2 SCREEN_PIXEL_SIZE;
 uniform float TIME;
 uniform float SKYLIGHT;
 
-uniform int Iu_sin1000[256];
-
-//#define PI 3.1415926536
-#define SC -0.3431457505
-#define SB -0.31370849898
-#define SA 1.65685424949
-
-// Approximate
-float approxSinstep(float x)
-{
-    return x * (x * (SC * x + SB) + SA);
-}
-
-//const int sin1000Size = 1000;
-float sine( float entry ){
-	
-	int I = int( ( entry + PI) / PI2 * 256.0 );
-	
-	//if (I > 255){
-	//	I = 0;
-	//}
-	//if ( I<0){
-	//	I=256;
-	//}
-	
-	float val = float ( Iu_sin1000[ I ] ) / 256.0 * PI2;
-	return val;
-}
 
 float DecodeFloatRGBA( in vec4 col )
 {
@@ -88,7 +59,7 @@ float color2float(vec3 color){
 
 float GetEmission( vec2 uv, out bool is_passable ){
 	vec4 val = texture2D(u_scene_emissive_data, uv);
-	is_passable = bool( 1.0 - val.a);
+	is_passable = bool(val.a);
 	return color2float( val.rgb);
 }
 
@@ -283,6 +254,7 @@ bool raymarch(vec2 origin, vec2 ray, out vec2 hit_pos, out float hit_data, out f
 		
 		// consider a hit if distance to surface is < epsilon (half pixel).
 		if (am_inside == false){
+			//if(step_dist < epsilon())
 			if(point_inside == true )
 			{
 				hit_pos = sample_point;
@@ -310,7 +282,7 @@ float czm_luminance(vec3 rgb)
 {
     // Algorithm from Chapter 10 of Graphics Shaders.
     const vec3 W = vec3(0.2125, 0.7154, 0.0721);
-    return dot(rgb, W)*2.0;
+    return dot(rgb, W);
 }
 
 // ================================================================================
@@ -323,7 +295,7 @@ void get_last_frame_data(vec2 uv, vec2 pix, vec3 mat_colour, out float last_emis
 {
 	//last_emission = 0.0;
 	
-	int offset = 4;
+	int offset = 1;
 	
 	for(int x = -offset; x <= offset; x++)
 	{
@@ -366,47 +338,6 @@ vec4 map4(vec4 value, vec4 inMin, vec4 inMax, vec4 outMin, vec4 outMax) {
   return outMin + (outMax - outMin) * (value - inMin) / (inMax - inMin);
 }
 
-float noise(vec2 p) {
-    
-    //vec2 uv = mod(p, 100000.) / 100000.;
-    vec4 tx = texture2D(u_noise_data, p);
-    
-    return (tx.x + tx.y + tx.z);// / 3.;
-    
-}
-
-vec2 CosSin(float x) {
-    vec2 si = fract(vec2(0.5,1.0) - x*2.0)*2.0 - 1.0;
-    vec2 so = sign(0.5-fract(vec2(0.25,0.5) - x));    
-    return (20.0 / (si*si + 4.0) - 4.0) * so;
-}
-
-
-float sinf(float x)
-{
-  x*=0.159155;
-  x-=floor(x);
-  float xx=x*x;
-  float y=-6.87897;
-  y=y*xx+33.7755;
-  y=y*xx-72.5257;
-  y=y*xx+80.5874;
-  y=y*xx-41.2408;
-  y=y*xx+6.28077;
-  return x*y;
-}
-float cosf(float x)
-{
-  return sinf(x+1.5708);
-}
-
-float AO(float dist, float radius, float intensity)
-{
-	float a = clamp(dist / radius, 0.0, 1.0) - 1.0;
-	return 1.0 - (pow(abs(a), 5.0) + 1.0) * intensity + (1.0 - intensity);
-	return smoothstep(0.0, 1.0, dist / radius);
-}
-
 // ================================================================================
 // do the thing!
 void main() 
@@ -424,10 +355,9 @@ void main()
 	float emis = 0.0;//texture2D(u_scene_emissive_data,uv).r * u_emission_multi;
 	
 	// get a random angle by sampling the noise texture and offsetting it by time (so we don't always sample
-	// the same noise).	
-	//vec2 time = vec2(TIME, -TIME);
-	float rand02pi = texture2D(u_noise_data, ( UV )).r * 0.75 * 2.0 * PI; // noise sample
-	float golden_angle = PI * 0.7639320225;
+	// the same noise).
+	vec2 time = vec2(TIME, -TIME);
+	float rand02pi = texture2D(u_noise_data, fract((uv + time) * 0.4)).r * 2.0 * PI; // noise sample
 	
 	float ohit_data;
 	bool origin_inside;
@@ -441,6 +371,9 @@ void main()
 	normals.b = (1.0 - normals.b)*1.5;
 	normals = normalize(normals * 2.0 - 1.0);
 	
+	//float rand02pi = random(UV * vec2(TIME, -TIME)) * 2.0 * PI;
+	float golden_angle = PI * 0.7639320225;
+	
 	vec4 scene = texture2D(u_scene_colour_data,UV);
 	
 	for(float i = 0.0; i < float(Iu_rays_per_pixel); i++)
@@ -451,8 +384,8 @@ void main()
 		
 		// get our ray dir by taking the random angle and adding golden_angle * ray number.
 		float cur_angle = rand02pi + golden_angle * i;
-		vec2 rand_direction = vec2( sin( cur_angle ), cos( cur_angle ));
-		
+		vec2 rand_direction = vec2(cos(cur_angle), sin(cur_angle));
+		//bool is_passable;
 		bool hit = raymarch(uv, rand_direction, hit_pos, hit_data, ray_dist);
 		
 		vec3 lDir = vec3(rand_direction.xy,0.25);
@@ -488,7 +421,7 @@ void main()
 			}
 			
 			// calculate total emissive/colour values from direct and bounced (last frame) lighting.
-			float emission = mat_emissive + last_emission * 2.0;// * 0.52;
+			float emission = mat_emissive + last_emission * 0.52;
 			float r = u_emission_range;
 			float drop = u_emission_dropoff;
 			
@@ -507,8 +440,6 @@ void main()
 	//emis *= (1.0 / (float(Iu_rays_per_pixel)* u_emission_multi )) ;
 	col *= (1.0 / float(Iu_rays_per_pixel));
 	
-
-	
 	if (inner_glow > 0.0){
 		float r = u_emission_range;
 		float sim_dist = 0.0 * inner_glow;
@@ -522,19 +453,13 @@ void main()
 	
 	if (scene.a == 0.0){
 		col.rgb *= SKYLIGHT;
-	}else{	
-		if ( origin_inside == false ){
-			float ao = AO( inner_depth, 0.15, 0.6);
-	
-			col *= ao * scene.a;
-		}
 	}
 	
 	gl_FragColor = vec4(col, 1.0) * scene;
 	
 	gl_FragColor = clamp(gl_FragColor,0.0,1.0);
 	
-	gl_FragColor.rgb = lin_to_srgb(gl_FragColor);
+	gl_FragColor.rgb = linearToneMapping(gl_FragColor.rgb);
 	
 	gl_FragColor.a = 1.0;
 	

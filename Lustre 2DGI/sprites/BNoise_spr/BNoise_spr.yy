@@ -11,9 +11,9 @@
   "bbox_right": 255,
   "bbox_top": 0,
   "bbox_bottom": 255,
-  "HTile": false,
-  "VTile": false,
-  "For3D": true,
+  "HTile": true,
+  "VTile": true,
+  "For3D": false,
   "width": 256,
   "height": 256,
   "textureGroupId": {

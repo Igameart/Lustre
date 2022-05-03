@@ -105,9 +105,10 @@ function LU_capture_emission_data(){
 
 	//gpu_set_tex_filter(true);
 	shader_set(LU_EmissivePacker_shd);
-	var uni = shader_get_uniform(LU_EmissivePacker_shd,"u_emission");
+	var uni = shader_get_uniform(LU_EmissivePacker_shd,"u_is_passable");
+	var uni2 = shader_get_uniform(LU_EmissivePacker_shd,"u_emission");
 	
-	shader_set_uniform_f(uni,12.0);
+	shader_set_uniform_f(uni2,12.0);
 
 	var tile_count = ds_list_size(LU_TileMaps);
 	
@@ -121,7 +122,8 @@ function LU_capture_emission_data(){
 	}
 
 	with GIData_obj{
-		shader_set_uniform_f(uni,emissive_strength * e_mul);
+		shader_set_uniform_i(uni,light_passable);
+		shader_set_uniform_f(uni2,emissive_strength * e_mul);
 		
 		draw_emission_data();
 		
@@ -168,6 +170,8 @@ function LU_capture_normal_data(){
 
 	var tile_count = ds_list_size(LU_TileMaps);
 	
+	shader_set(LU_NormalsTransform)
+	
 	for (var t = 0; t<tile_count; t++){
 		var tileMap = LU_TileMaps[| t];
 		var tiledat = tileMap.normal;
@@ -178,9 +182,11 @@ function LU_capture_normal_data(){
 	}
 
 	//Use random identifier instead of just "solid" in blue channel to check when leaving an object
-	with GIData_obj draw_normal_data();
+	with GIData_obj{
+		draw_normal_data();
+	}
 
-
+	shader_reset();
 	surface_reset_target();
 }
 
@@ -223,6 +229,10 @@ function LU_calculate_voronoi_seed(){
 
 function LU_fill_render_passes(){
 	
+	surface_set_target(LU_NoiseDataSurf);
+		draw_sprite_tiled(BNoise_spr,0,random(WW),random(HH));
+	surface_reset_target();
+	
 	var jFlood = LU_render_pass_array(LU_voronoi_passes, LU_VoronoiSeedSurf,noone);
 
 	var dField = LU_render_pass_array(LU_DistanceField, jFlood,noone);
@@ -234,8 +244,10 @@ function LU_fill_render_passes(){
 	array_push(stages,[ "u_scene_colour_data", surface_get_texture(LU_ColourData) ]);
 	array_push(stages,[ "u_scene_emissive_data", surface_get_texture(LU_EmissiveData) ]);
 	array_push(stages,[ "u_last_frame_data", surface_get_texture(LU_LastFrameData) ]);
+	array_push(stages,[ "u_noise_data", surface_get_texture(LU_NoiseDataSurf) ]);
 	array_push(stages,[ "u_normal_data", surface_get_texture(LU_NormalDataSurf) ]);
 	array_push(stages,[ "u_flood_data", surface_get_texture(jFlood) ]);
+	
 
 	var GIRender = LU_render_pass_array(LU_GlobalIllum, dField,stages);
 	
@@ -247,7 +259,11 @@ function LU_render_final(){
 
 var GIRender = LU_fill_render_passes();
 
-	surface_set_target(LU_EmissiveData);
+	var xx,yy;
+	xx = camera_get_view_x(view_get_camera(view_current));
+	yy = camera_get_view_y(view_get_camera(view_current));
+	
+	surface_set_target(LU_VoronoiDataSurf);
 	
 	draw_clear_alpha(c_black,0);
 	
@@ -256,10 +272,6 @@ var GIRender = LU_fill_render_passes();
 		shader_set_uniform_f_array(shader_get_uniform(glslSmartDenoise_shd,"u_texture_size"),[WW,HH]);
 	}
 
-	var xx,yy;
-	xx = camera_get_view_x(view_get_camera(view_current));
-	yy = camera_get_view_y(view_get_camera(view_current));
-
 	draw_surface_ext(GIRender,xx,yy,1,1,0,c_white,1);
 	//LU_draw_bloom(GIRender);
 
@@ -267,7 +279,10 @@ var GIRender = LU_fill_render_passes();
 		shader_reset();
 	surface_reset_target();
 
-	surface_copy(LU_LastFrameData,0,0,GIRender);
+	//surface_copy(LU_LastFrameData,0,0,GIRender);
+	surface_set_target(LU_LastFrameData);
+	draw_surface_ext(GIRender,0,0,1,1,0,c_white,0.1);
+	surface_reset_target();
 	
 	surface_set_target(application_surface);
 	
@@ -279,16 +294,37 @@ var GIRender = LU_fill_render_passes();
 	
 	shader_set_uniform_i( shader_get_uniform(LU_Final_shd,"render_type"),true);
 	
-	draw_surface(LU_EmissiveData,xx,yy);
+	draw_surface(LU_VoronoiDataSurf,xx,yy);
 	gpu_set_blendmode(bm_add);
 	
 	shader_set_uniform_i(shader_get_uniform(LU_Final_shd,"render_type"),false);
 	
-	draw_surface(LU_EmissiveData,xx,yy);
+	draw_surface(LU_VoronoiDataSurf,xx,yy);
 	shader_reset();
 	
 	gpu_set_blendmode(bm_normal);
 	
+	//draw_surface(LU_EmissiveData,xx,yy);
+	
 	surface_reset_target();
 
 }
+
+
+sine_array = [127, 130, 133, 136, 139, 142, 145, 148, 151, 154, 157, 161, 164, 166, 169, 172, 
+175, 178, 181, 184, 187, 189, 192, 195, 197, 200, 202, 205, 207, 210, 212, 214, 
+217, 219, 221, 223, 225, 227, 229, 231, 233, 234, 236, 237, 239, 240, 242, 243, 
+244, 245, 247, 248, 249, 249, 250, 251, 252, 252, 253, 253, 253, 254, 254, 254, 
+254, 254, 254, 254, 253, 253, 253, 252, 252, 251, 250, 249, 249, 248, 247, 245, 
+244, 243, 242, 240, 239, 237, 236, 234, 233, 231, 229, 227, 225, 223, 221, 219, 
+217, 214, 212, 210, 207, 205, 202, 200, 197, 195, 192, 189, 187, 184, 181, 178, 
+175, 172, 169, 166, 164, 161, 157, 154, 151, 148, 145, 142, 139, 136, 133, 130, 
+127, 124, 121, 118, 115, 112, 109, 106, 103, 100,  97,  93,  90,  88,  85,  82, 
+ 79,  76,  73,  70,  67,  65,  62,  59,  57,  54,  52,  49,  47,  44,  42,  40, 
+ 37,  35,  33,  31,  29,  27,  25,  23,  21,  20,  18,  17,  15,  14,  12,  11, 
+ 10,   9,   7,   6,   5,   5,   4,   3,   2,   2,   1,   1,   1,   0,   0,   0, 
+  0,   0,   0,   0,   1,   1,   1,   2,   2,   3,   4,   5,   5,   6,   7,   9, 
+ 10,  11,  12,  14,  15,  17,  18,  20,  21,  23,  25,  27,  29,  31,  33,  35, 
+ 37,  40,  42,  44,  47,  49,  52,  54,  57,  59,  62,  65,  67,  70,  73,  76, 
+ 79,  82,  85,  88,  90,  93,  97, 100, 103, 106, 109, 112, 115, 118, 121, 124, 
+0]
