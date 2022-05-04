@@ -38,34 +38,12 @@ uniform vec2 SCREEN_PIXEL_SIZE;
 uniform float TIME;
 uniform float SKYLIGHT;
 
-uniform int Iu_sin1000[256];
+uniform float u_dither[64];
 
 //#define PI 3.1415926536
 #define SC -0.3431457505
 #define SB -0.31370849898
 #define SA 1.65685424949
-
-// Approximate
-float approxSinstep(float x)
-{
-    return x * (x * (SC * x + SB) + SA);
-}
-
-//const int sin1000Size = 1000;
-float sine( float entry ){
-	
-	int I = int( ( entry + PI) / PI2 * 256.0 );
-	
-	//if (I > 255){
-	//	I = 0;
-	//}
-	//if ( I<0){
-	//	I=256;
-	//}
-	
-	float val = float ( Iu_sin1000[ I ] ) / 256.0 * PI2;
-	return val;
-}
 
 float DecodeFloatRGBA( in vec4 col )
 {
@@ -380,10 +358,85 @@ float noise(vec2 p) {
     //vec2 uv = mod(p, 100000.) / 100000.;
     //vec4 tx = texture2D(u_noise_data, p);
     return texture2D(u_noise_data, p).r/PI2;
-	
     
     //return (tx.x + tx.y + tx.z) / 3.;
     
+}
+
+float dither( vec2 uv){
+	
+	int bayer[64];
+	bayer[0] = 0 ;
+	bayer[1] = 32;
+	bayer[2] = 8 ;
+	bayer[3] = 40;
+	bayer[4] = 2 ;
+	bayer[5] = 34;
+	bayer[6] = 10;
+	bayer[7] = 42;
+	bayer[8] = 48;
+	bayer[9] = 16;
+	bayer[10] = 56;
+	bayer[11] = 24;
+	bayer[12] = 50;
+	bayer[13] = 18;
+	bayer[14] = 58;
+	bayer[15] = 26;
+	bayer[16] = 12;
+	bayer[17] = 44;
+	bayer[18] = 4 ;
+	bayer[19] = 36;
+	bayer[20] = 14;
+	bayer[21] = 46;
+	bayer[22] = 6 ;
+	bayer[23] = 38;
+	bayer[24] = 60;
+	bayer[25] = 28;
+	bayer[26] = 52;
+	bayer[27] = 20;
+	bayer[28] = 62;
+	bayer[29] = 30;
+	bayer[30] = 54;
+	bayer[31] = 22;
+	bayer[32] = 3 ;
+	bayer[33] = 35;
+	bayer[34] = 11;
+	bayer[35] = 43;
+	bayer[36] = 1 ;
+	bayer[37] = 33;
+	bayer[38] = 9 ;
+	bayer[39] = 41;
+	bayer[40] = 51;
+	bayer[41] = 19;
+	bayer[42] = 59;
+	bayer[43] = 27;
+	bayer[44] = 49;
+	bayer[45] = 17;
+	bayer[46] = 57;
+	bayer[47] = 25;
+	bayer[48] = 15;
+	bayer[49] = 47;
+	bayer[50] = 7 ;
+	bayer[51] = 39;
+	bayer[52] = 13;
+	bayer[53] = 45;
+	bayer[54] = 5 ;
+	bayer[55] = 37;
+	bayer[56] = 63;
+	bayer[57] = 31;
+	bayer[58] = 55;
+	bayer[59] = 23;
+	bayer[60] = 61;
+	bayer[61] = 29;
+	bayer[62] = 53;
+	bayer[63] = 21;
+
+	uv = mod(uv,8.0);
+	
+	float val = float(bayer[int(uv.x)+int(uv.y)*8]);
+	
+	return val / 63.0;
+	
 }
 
 vec2 CosSin(float x) {
@@ -436,8 +489,8 @@ void main()
 	
 	// get a random angle by sampling the noise texture and offsetting it by time (so we don't always sample
 	// the same noise).	
-	//vec2 time = vec2(TIME, -TIME);
-	float rand02pi = texture2D(u_noise_data, ( UV )).r * 0.75 * 2.0 * PI; // noise sample
+	vec2 time = vec2(TIME, -TIME) * 5.0;
+	float rand02pi = dither(( (UV + time) * u_resolution )) * 0.125 * 2.0 * PI; // noise sample
 	float golden_angle = PI * 0.7639320225;
 	
 	float ohit_data;

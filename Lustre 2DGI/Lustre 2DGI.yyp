@@ -38,6 +38,7 @@
     {"id":{"name":"emission_circle_spr","path":"sprites/emission_circle_spr/emission_circle_spr.yy",},"order":2,},
     {"id":{"name":"platform_rm","path":"rooms/platform_rm/platform_rm.yy",},"order":3,},
     {"id":{"name":"LU_BloomY_shd","path":"shaders/LU_BloomY_shd/LU_BloomY_shd.yy",},"order":11,},
+    {"id":{"name":"bayer16_spr","path":"sprites/bayer16_spr/bayer16_spr.yy",},"order":8,},
     {"id":{"name":"alienPlatform_em_til","path":"tilesets/alienPlatform_em_til/alienPlatform_em_til.yy",},"order":2,},
     {"id":{"name":"GIHandler_obj","path":"objects/GIHandler_obj/GIHandler_obj.yy",},"order":2,},
     {"id":{"name":"topdown_rm","path":"rooms/topdown_rm/topdown_rm.yy",},"order":1,},

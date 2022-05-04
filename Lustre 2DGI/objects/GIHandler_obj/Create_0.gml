@@ -54,13 +54,14 @@ mat.set_shader_param(mat.param,"SCREEN_PIXEL_SIZE", [1/WW,1/HH]);
 mat.set_shader_param(mat.param,"TIME", TIME);
 mat.set_shader_param(mat.param,"SKYLIGHT", 0.125);
 mat.set_shader_param(mat.param,"u_resolution", [WW,HH] );
-mat.set_shader_param(mat.param,"Iu_rays_per_pixel", 100);
+mat.set_shader_param(mat.param,"Iu_rays_per_pixel", 75);
 mat.set_shader_param(mat.param,"u_dist_mod", distmod);
 mat.set_shader_param(mat.param,"Iu_bounce", true);
 mat.set_shader_param(mat.param,"u_emission_multi", 1.0);
 mat.set_shader_param(mat.param,"u_emission_range", 10.0);
 mat.set_shader_param(mat.param,"u_emission_dropoff", 2.0);
-mat.set_shader_param(mat.param,"Iu_max_raymarch_steps", 30);
+mat.set_shader_param(mat.param,"Iu_max_raymarch_steps", 32);
+//mat.set_shader_param(mat.param,"u_dither", dither);
 //mat.set_shader_param(mat.param,"Iu_sin1000", sine_array);
 
 surface_set_target(LU_LastFrameData);

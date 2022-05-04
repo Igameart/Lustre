@@ -7,7 +7,7 @@ image_blend = make_color_hsv(random(255),200,255);
 image_alpha = 1;
 emissive_strength = 1;
 
-e_mul = random_range(0.5,8)*12;
+e_mul = random_range(0.5,8)*32;
 
 emissive_index = circle_spr;
 color_index = sprite_index;

@@ -41,9 +41,9 @@ vec4 smartDeNoise(sampler2D tex, sampler2D albedo, sampler2D normal, vec2 uv, fl
     float invThresholdSqx2 = .5 / (threshold * threshold);     // 1.0 / (sigma^2 * 2.0)
     float invThresholdSqrt2PI = INV_SQRT_OF_2PI / threshold;   // 1.0 / (sqrt(2*PI) * sigma^2)
 
-    vec4 centrPx = texture2D(normal,uv); 
+    vec4 centrPx = texture2D(normal,uv)*2.0; 
     //centrPx +=  texture2D(albedo,uv);
-	centrPx +=  texture2D(tex,uv) * 0.25;
+	centrPx +=  texture2D(tex,uv) * 0.5;
 	//centrPx *= 0.333;
 
     float zBuff = 0.0;
@@ -56,10 +56,10 @@ vec4 smartDeNoise(sampler2D tex, sampler2D albedo, sampler2D normal, vec2 uv, fl
         for (d.y=-pt; d.y <= pt; d.y++) {
             float blurFactor = exp( -dot(d , d) * invSigmaQx2 ) * invSigmaQx2PI;
 
-            vec4 walkPx =  texture2D(normal,uv+d/size);
+            vec4 walkPx =  texture2D(normal,uv+d/size)*2.0;
             //walkPx +=  texture2D(albedo,uv+d/size);
             vec4 colPx =  texture2D(tex,uv+d/size);
-			walkPx += colPx * 0.25;
+			walkPx += colPx * 0.5;
 			//walkPx *= 0.333;
 			
             vec4 dC = walkPx-centrPx;
@@ -78,9 +78,9 @@ varying vec4 v_vColour;
 
 void main()
 {
-	float sigma = 2.0;
-	float kSigma = 3.0;
-	float threshold = 0.02025;
+	float sigma = 1.50;
+	float kSigma = 1.50;
+	float threshold = 0.082025;
 	
     gl_FragColor = v_vColour * smartDeNoise( gm_BaseTexture, u_Albeo, u_Normal, v_vTexcoord, sigma, kSigma, threshold );
 	gl_FragColor.a = texture2D(gm_BaseTexture,v_vTexcoord).a;
