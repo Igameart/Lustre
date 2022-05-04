@@ -366,12 +366,23 @@ vec4 map4(vec4 value, vec4 inMin, vec4 inMax, vec4 outMin, vec4 outMax) {
   return outMin + (outMax - outMin) * (value - inMin) / (inMax - inMin);
 }
 
+float fade(float value, float start, float end)
+{
+    return (clamp(value,start,end)-start)/(end-start);
+}
+
+//float noise(float co) { return fract(sin(co*(91.3458)) * 47453.5453); }
+//float noise(vec2 co){ return noise(co.x+co.y);}//return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453); }
+//float noise(vec3 co){ return noise(co.xy+noise(co.z)); }
+
 float noise(vec2 p) {
     
     //vec2 uv = mod(p, 100000.) / 100000.;
-    vec4 tx = texture2D(u_noise_data, p);
+    //vec4 tx = texture2D(u_noise_data, p);
+    return texture2D(u_noise_data, p).r/PI2;
+	
     
-    return (tx.x + tx.y + tx.z);// / 3.;
+    //return (tx.x + tx.y + tx.z) / 3.;
     
 }
 

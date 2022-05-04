@@ -16,6 +16,8 @@
 #define INV_PI 0.31830988618379067153776752674503
 
 uniform vec2 u_texture_size;
+uniform sampler2D u_Albeo;
+uniform sampler2D u_Normal;
 
 //  smartDeNoise - parameters
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -27,7 +29,8 @@ uniform vec2 u_texture_size;
 //      kSigma * sigma  -->  radius of the circular kernel
 //  float threshold   - edge sharpening threshold 
 
-vec4 smartDeNoise(sampler2D tex, vec2 uv, float sigma, float kSigma, float threshold)
+
+vec4 smartDeNoise(sampler2D tex, sampler2D albedo, sampler2D normal, vec2 uv, float sigma, float kSigma, float threshold)
 {
     float radius = floor(kSigma*sigma+0.5);
     float radQ = radius * radius;
@@ -38,7 +41,10 @@ vec4 smartDeNoise(sampler2D tex, vec2 uv, float sigma, float kSigma, float thres
     float invThresholdSqx2 = .5 / (threshold * threshold);     // 1.0 / (sigma^2 * 2.0)
     float invThresholdSqrt2PI = INV_SQRT_OF_2PI / threshold;   // 1.0 / (sqrt(2*PI) * sigma^2)
 
-    vec4 centrPx = texture2D(tex,uv); 
+    vec4 centrPx = texture2D(normal,uv); 
+    //centrPx +=  texture2D(albedo,uv);
+	centrPx +=  texture2D(tex,uv) * 0.25;
+	//centrPx *= 0.333;
 
     float zBuff = 0.0;
     vec4 aBuff = vec4(0.0);
@@ -50,12 +56,18 @@ vec4 smartDeNoise(sampler2D tex, vec2 uv, float sigma, float kSigma, float thres
         for (d.y=-pt; d.y <= pt; d.y++) {
             float blurFactor = exp( -dot(d , d) * invSigmaQx2 ) * invSigmaQx2PI;
 
-            vec4 walkPx =  texture2D(tex,uv+d/size);
+            vec4 walkPx =  texture2D(normal,uv+d/size);
+            //walkPx +=  texture2D(albedo,uv+d/size);
+            vec4 colPx =  texture2D(tex,uv+d/size);
+			walkPx += colPx * 0.25;
+			//walkPx *= 0.333;
+			
             vec4 dC = walkPx-centrPx;
+			
             float deltaFactor = exp( -dot(dC, dC) * invThresholdSqx2) * invThresholdSqrt2PI * blurFactor;
 
             zBuff += deltaFactor;
-            aBuff += deltaFactor*walkPx;
+            aBuff += deltaFactor*colPx;
         }
     }
     return aBuff/zBuff;
@@ -66,11 +78,13 @@ varying vec4 v_vColour;
 
 void main()
 {
-	float sigma = 5.0;
+	float sigma = 2.0;
 	float kSigma = 3.0;
-	float threshold = 0.18*0.14;
+	float threshold = 0.02025;
 	
-    gl_FragColor = v_vColour * smartDeNoise( gm_BaseTexture, v_vTexcoord, sigma, kSigma, threshold );
+    gl_FragColor = v_vColour * smartDeNoise( gm_BaseTexture, u_Albeo, u_Normal, v_vTexcoord, sigma, kSigma, threshold );
+	gl_FragColor.a = texture2D(gm_BaseTexture,v_vTexcoord).a;
+    //gl_FragColor.rgb = texture2D(u_Albeo,v_vTexcoord).rgb;
 	//gl_FragColor.a = 1.0;
 }
 
